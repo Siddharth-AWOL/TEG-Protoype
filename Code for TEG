@@ -1,0 +1,48 @@
+#include <dht11.h>
+#include <Servo.h>
+
+#define DHT11PIN 4
+
+dht11 DHT11;
+Servo myservo;
+float voltage;
+
+void gen_voltage(void) {
+    float analogValue = analogRead(10);
+    voltage = analogValue / 62.0;
+}
+
+void setup() {
+    myservo.attach(9);
+    Serial.begin(9600);
+    myservo.write(180);
+    pinMode(10, INPUT);
+    pinMode(8, OUTPUT);
+}
+
+void loop() {
+    Serial.println();
+    int chk = DHT11.read(DHT11PIN);
+    float temperature = 0;
+    if (chk == DHTLIB_OK) {
+        temperature = (float)DHT11.temperature;
+        Serial.print("Temperature (C): ");
+        Serial.println(temperature, 2);
+    } else {
+        Serial.print("Error code: ");
+        Serial.println(chk);
+    }
+    delay(2000);
+    if (temperature >= 40.00) {
+        myservo.write(90);
+    }
+    gen_voltage();
+    Serial.print(voltage);
+    Serial.println("V");
+    delay(50);
+    if (voltage >= 5.00) {
+        digitalWrite(8, HIGH);
+    } else {
+        digitalWrite(8, LOW);
+    }
+}
